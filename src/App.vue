@@ -10,7 +10,7 @@
     </div>
     <button @click="getWeibo">微博监控</button>
     <button @click="getFrist">请求数据1</button>
-    <button @click="startGo">开始抢购</button>
+    <button @click="creatOrder">开始抢购</button>
   </div>
   <audio controls ref="audio" class="aud">
     <source src="./assets/2929593989.mp3" />
@@ -30,7 +30,9 @@ function ajax({ method = 'POST', url = '', params = {}, token = '',uid = '', hos
             'Content-Type': 'application/json;charset=UTF-8',
         }
         if (token) {
-          baseHeaders.token = token
+          baseHeaders['X-Auth-Token'] = token
+          baseHeaders['X-Timestamp'] = new Date().getTime()
+          baseHeaders['X-Nonce'] = 'PmHwbMiDpriX'
         }
         if (uid) {
           baseHeaders.uid = uid
@@ -100,36 +102,97 @@ function getWeibo() {
 
 let detailList = ref([])
 let groupon_id = ref('')
-function getData(grouponid) {
+function getData(uuid) {
   getJson({
     method: 'get',
     host: '/api',
-    url: '/api/common/getGrouponSpus?groupon_id='+grouponid+'&size=40&page=1&query=&state=1&category=undefined&r='+ Math.random(),
-    token: 'db2e42dafb3e4f4468b43756b7ef9e72',
-    uid:'usr1647753967996159148'
+    url: '/api/v1/common/groupon/item/batch?groupon_uuid='+uuid+'&size=20&page=1&query=&state=1',
+    token: 'SDf6cZsR+tvTf71DXULNhw==',
   }).then((res) => {
       console.log(res.data.lst);
       // 详情列表
-      detailList.value  = res.data.lst
+      detailList.value  = res.data.list
+      getFreight(uuid,detailList.value[0].skus[0].uuid)
+      getaddress()
   })
 }
 function getFrist() {
   getJson({
     method: 'get',
     host: '/api',
-    url: '/api/user/groupons/viewed?page=1&query=&size=1&=r'+ Math.random(),
-    token: '470bfeb2803c8417603b41cc07322247',
-    uid:'usr1674136047649579902'
+    url: '/api/common/getViewedGroupons?page=1&query=&size=10&=r'+ Math.random(),
+    token: 'SDf6cZsR+tvTf71DXULNhw==',
   }).then((res) => {
       let list = res.data.lst
-      groupon_id = list[0].stast.groupon_id
-      getData(groupon_id)
-    
+      let uuid = list[0].uuid
+      groupon_id.value = list[0].uuid
+      getData(uuid)
   })
 }
 function checkuuid(uuid) {
 
 }
+
+// 请求运费
+function getFreight(uuid,uuid1) {
+  getJson({
+    method: 'post',
+    host: '/api',
+    url: '/api/common/previewOrderFreight?',
+    token: 'SDf6cZsR+tvTf71DXULNhw==',
+    params:{"groupon_id":uuid,"items":[{"uuid":uuid1,"count":1}]}
+  }).then((res) => {
+    console.log('运费',res.data.freight);
+  })
+}
+// 请求默认地址
+let address = ref({})
+function getaddress(uuid,uuid1) {
+  getJson({
+    method: 'get',
+    host: '/api',
+    url: '/api/v1/address/receiver/default?',
+    token: 'SDf6cZsR+tvTf71DXULNhw==',
+  }).then((res) => {
+    address.value = res.data
+  })
+}
+// 创建订单
+function creatOrder() {
+  let checkskuList = document.querySelectorAll('.checksku')
+  let checksku = []
+  checkskuList.forEach((item,index)=>{
+    let checked = item.checked
+    if (checked) {
+      checksku.push({"uuid":item.value,"count":1})
+    }
+  })
+  getJson({
+    method: 'post',
+    host: '/api',
+    url: '/api/common/asyncCreateOrder?',
+    token: 'SDf6cZsR+tvTf71DXULNhw==',
+    params:{
+      "groupon_id": groupon_id.value,
+      "user_address": {
+          "uuid": address.value.address_uuid,
+          "nickname": address.value.name,
+          "tel": address.value.tel,
+          "area": address.value.province+'/'+address.value.city+'/'+address.value.area,
+          "detail": address.value.address
+      },
+      "user_address_id": address.value.address_uuid,
+      "remark": "111",
+      "items": checksku,
+      "pay_type": "",
+      "coupon_id": "",
+      "opt_delivery": 1
+  },
+  }).then((res) => {
+
+  })
+}
+// 开始抢购
 let flag = ref(false)
 function startGo() {
   flag = true
