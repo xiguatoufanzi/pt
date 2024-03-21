@@ -10,7 +10,7 @@
     </div>
     <button @click="getWeibo">微博监控</button>
     <button @click="getFrist">请求数据1</button>
-    <button @click="creatOrder">开始抢购</button>
+    <button @click="goStart">开始抢购</button>
   </div>
   <audio controls ref="audio" class="aud">
     <source src="./assets/2929593989.mp3" />
@@ -158,7 +158,7 @@ function getaddress(uuid,uuid1) {
   })
 }
 // 创建订单
-function creatOrder() {
+function goStart() {
   let checkskuList = document.querySelectorAll('.checksku')
   let checksku = []
   checkskuList.forEach((item,index)=>{
@@ -167,6 +167,18 @@ function creatOrder() {
       checksku.push({"uuid":item.value,"count":1})
     }
   })
+  let timer = setInterval(() => {
+    if (new Date().getTime() >= 1711026000000) {
+      clearInterval(timer)
+      for (let index = 0; index < 20; index++) {
+        creatOrder(checksku)
+      }
+    }
+  }, 10);
+}
+
+// 创建订单
+function creatOrder(checksku) {
   getJson({
     method: 'post',
     host: '/api',
@@ -189,225 +201,10 @@ function creatOrder() {
       "opt_delivery": 1
   },
   }).then((res) => {
-
+   if (res.code != 20000) {
+    creatOrder(checksku)
+   }
   })
-}
-// 开始抢购
-let flag = ref(false)
-function startGo() {
-  flag = true
-  let checkskuList = document.querySelectorAll('.checksku')
-  let checksku = []
-  checkskuList.forEach((item,index)=>{
-    let checked = item.checked
-    if (checked) {
-      checksku.push({"uuid":item.value,"count":1})
-    }
-  })
-  if (checksku.length ==1 ) {
-    for (let index = 500; index < 1; index++) {
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: '34b8d7a20e2385d983dc5805b771203d',
-        uid:'usr1660312392831411543',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"84a5705e837d44839a23a90845f6205a","user_id":"usr1660312392831411543","nickname":"呜哇嘿","tel":"16643563081","area":"上海市/上海市/闵行区","detail":"红松路700弄龙柏二村252-501","is_default":1,"create_time":"2023-02-27 12:01:15"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: 'd7f2f64a9cb872a48e6b454b4257c3e1',
-        uid:'usr1675859798427933889',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"cd5667d01c8044c1befe2affdb136bdf","user_id":"usr1675859798427933889","nickname":"小鱼丸","tel":"18050553610","area":"上海市/上海市/浦东新区","detail":"东明路街道凌兆路530弄小区59号楼401","is_default":1,"create_time":"2023-05-06 13:04:50"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-    }
-  }else if (checksku.length == 2) {
-    for (let index = 0; index < 500; index++) {
-      let checksku1 = checksku.slice(0,1)
-      let checksku2 = checksku.slice(1,2)
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: '34b8d7a20e2385d983dc5805b771203d',
-        uid:'usr1660312392831411543',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"84a5705e837d44839a23a90845f6205a","user_id":"usr1660312392831411543","nickname":"呜哇嘿","tel":"16643563081","area":"上海市/上海市/闵行区","detail":"红松路700弄龙柏二村252-501","is_default":1,"create_time":"2023-02-27 12:01:15"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku1,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: 'd7f2f64a9cb872a48e6b454b4257c3e1',
-        uid:'usr1675859798427933889',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"cd5667d01c8044c1befe2affdb136bdf","user_id":"usr1675859798427933889","nickname":"小鱼丸","tel":"18050553610","area":"上海市/上海市/浦东新区","detail":"东明路街道凌兆路530弄小区59号楼401","is_default":1,"create_time":"2023-05-06 13:04:50"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku2,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-      // getJson({
-      //   method: 'post',
-      //   host: '/api',
-      //   url: '/api/common/asyncCreateOrder?',
-      //   token: 'db2e42dafb3e4f4468b43756b7ef9e72',
-      //   uid:'usr1647753967996159148',
-      //   headers:{
-      //     authorized:'1'
-      //   },
-      //   params:{
-      //     "groupon_id":groupon_id,
-      //     "user_address":{"uuid":"8c42b82a45204b7aba1825a627570e1d","user_id":"usr1647753967996159148","nickname":"玲珑","tel":"18050553610","area":"上海市/上海市/闵行区","detail":"吴宝路139弄汇宝公寓","is_default":1,"create_time":"2022-12-12 14:40:25"},
-      //     "user_address_id":"",
-      //     "remark":"1",
-      //     "pickup":{},
-      //     "contact":"",
-      //     "items":checksku2,
-      //     "pay_type":"",
-      //     "coupon_id":""
-      //   }
-      // })
-      // getJson({
-      //   method: 'post',
-      //   host: '/api',
-      //   url: '/api/common/asyncCreateOrder?',
-      //   token: '34b8d7a20e2385d983dc5805b771203d',
-      //   uid:'usr1660312392831411543',
-      //   headers:{
-      //     authorized:'1'
-      //   },
-      //   params:{
-      //     "groupon_id":groupon_id,
-      //     "user_address":{"uuid":"84a5705e837d44839a23a90845f6205a","user_id":"usr1660312392831411543","nickname":"呜哇嘿","tel":"16643563081","area":"上海市/上海市/闵行区","detail":"红松路700弄龙柏二村252-501","is_default":1,"create_time":"2023-02-27 12:01:15"},
-      //     "user_address_id":"",
-      //     "remark":"1",
-      //     "pickup":{},
-      //     "contact":"",
-      //     "items":checksku2,
-      //     "pay_type":"",
-      //     "coupon_id":""
-      //   }
-      // })
-    }
-  }else if (checksku.length == 3) {
-    for (let index = 0; index < 500; index++) {
-      let checksku1 = checksku.slice(0,1)
-      let checksku2 = checksku.slice(1,2)
-      let checksku3 = checksku.slice(2,3)
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: 'db2e42dafb3e4f4468b43756b7ef9e72',
-        uid:'usr1647753967996159148',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"8c42b82a45204b7aba1825a627570e1d","user_id":"usr1647753967996159148","nickname":"玲珑","tel":"18050553610","area":"上海市/上海市/闵行区","detail":"吴宝路139弄汇宝公寓","is_default":1,"create_time":"2022-12-12 14:40:25"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku1,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: '34b8d7a20e2385d983dc5805b771203d',
-        uid:'usr1660312392831411543',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"84a5705e837d44839a23a90845f6205a","user_id":"usr1660312392831411543","nickname":"呜哇嘿","tel":"16643563081","area":"上海市/上海市/闵行区","detail":"红松路700弄龙柏二村252-501","is_default":1,"create_time":"2023-02-27 12:01:15"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku2,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-      getJson({
-        method: 'post',
-        host: '/api',
-        url: '/api/common/asyncCreateOrder?',
-        token: '470bfeb2803c8417603b41cc07322247',
-        uid:'usr1674136047649579902',
-        headers:{
-          authorized:'1'
-        },
-        params:{
-          "groupon_id":groupon_id,
-          "user_address":{"uuid":"10959be1a66f410f8f9448176bebfabc","user_id":"usr1674136047649579902","nickname":"兔子强盗","tel":"17701269964","area":"上海市/上海市/闵行区","detail":"新龙路558弄号西郊英园","is_default":1,"create_time":"2023-02-27 12:02:16"},
-          "user_address_id":"",
-          "remark":"1",
-          "pickup":{},
-          "contact":"",
-          "items":checksku3,
-          "pay_type":"",
-          "coupon_id":""
-        }
-      })
-    }
-  }
 }
 
 </script>
